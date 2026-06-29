@@ -1,4 +1,4 @@
-const CACHE = 'osintguard-v1';
+const CACHE = 'osintguard-v3';
 const ASSETS = [
   '/osintguard/',
   '/osintguard/index.html',
@@ -19,11 +19,7 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.url.includes('haveibeenpwned')) {
-    e.respondWith(fetch(e.request).catch(() => new Response('[]')));
-    return;
-  }
   e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request))
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });
