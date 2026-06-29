@@ -7,322 +7,204 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OSINTGuard">
 <meta name="theme-color" content="#6366f1">
-<title>OSINTGuard</title>
+<title>OSINTGuard v4</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.svg">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0f172a; --surface: #1e293b; --surface2: #263044;
-    --accent: #6366f1; --accent2: #818cf8; --danger: #ef4444;
-    --warn: #f59e0b; --ok: #22c55e; --text: #f1f5f9;
-    --muted: #94a3b8; --border: #334155; --radius: 14px; --tab-height: 72px;
-  }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; overflow: hidden; }
-  #app { display: flex; flex-direction: column; height: 100%; }
-  .header { background: var(--surface); padding: env(safe-area-inset-top, 44px) 20px 14px; border-bottom: 1px solid var(--border); }
-  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
-  .header h1 span { color: var(--accent2); }
-  .content { flex: 1; overflow-y: auto; padding: 16px 16px calc(var(--tab-height) + env(safe-area-inset-bottom, 16px)); }
-  .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--tab-height) + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--border); display: flex; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 100; }
-  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; color: var(--muted); font-size: 10px; cursor: pointer; padding-top: 8px; transition: color .15s; }
-  .tab-btn.active { color: var(--accent2); }
-  .tab-btn svg { width: 24px; height: 24px; }
-  .screen { display: none; } .screen.active { display: block; }
-  .card { background: var(--surface); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
-  .card-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 10px; }
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 10px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity .15s; }
-  .btn:active { opacity: .75; }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-ghost { background: var(--surface2); color: var(--text); }
-  .btn-sm { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
-  .btn-full { width: 100%; justify-content: center; }
-  .pill { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-  .pill-info { background: #1e3a5f; color: #93c5fd; }
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
-  .stat-card { background: var(--surface2); border-radius: 12px; padding: 14px 10px; text-align: center; }
-  .stat-num { font-size: 28px; font-weight: 700; line-height: 1; }
-  .stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .shield-hero { text-align: center; padding: 28px 0 20px; }
-  .shield-hero .icon { font-size: 72px; line-height: 1; }
-  .shield-hero .status-text { font-size: 18px; font-weight: 700; margin-top: 8px; }
-  .shield-hero .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
-  .list-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .list-item:last-child { border-bottom: none; }
-  .list-item-icon { font-size: 20px; margin-top: 2px; flex-shrink: 0; }
-  .list-item-body { flex: 1; min-width: 0; }
-  .list-item-title { font-size: 15px; font-weight: 600; }
-  .list-item-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .list-item-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-  .form-group { margin-bottom: 14px; }
-  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
-  .form-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; color: var(--text); font-size: 15px; outline: none; }
-  .form-input:focus { border-color: var(--accent); }
-  textarea.form-input { min-height: 80px; resize: vertical; font-family: inherit; }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; display: flex; align-items: flex-end; }
-  .modal-overlay.hidden { display: none; }
-  .modal { background: var(--surface); border-radius: 20px 20px 0 0; padding: 20px; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); width: 100%; max-height: 90vh; overflow-y: auto; }
-  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
-  .modal-close { float: right; background: var(--surface2); border: none; color: var(--muted); border-radius: 50%; width: 28px; height: 28px; font-size: 16px; cursor: pointer; line-height: 28px; text-align: center; }
-  .letter-preview { background: var(--surface2); border-radius: 10px; padding: 14px; font-size: 12px; line-height: 1.6; white-space: pre-wrap; color: var(--text); font-family: 'Courier New', monospace; max-height: 280px; overflow-y: auto; }
-  #unlock-screen { position: fixed; inset: 0; background: var(--bg); z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; }
-  #unlock-screen.hidden { display: none; }
-  .unlock-icon { font-size: 64px; margin-bottom: 16px; }
-  .unlock-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-  .unlock-sub { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 28px; }
-  .pin-dots { display: flex; gap: 16px; margin-bottom: 24px; }
-  .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--muted); transition: background .15s; }
-  .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
-  .pin-keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 12px; }
-  .pin-key { width: 72px; height: 72px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 22px; font-weight: 600; cursor: pointer; transition: background .1s; }
-  .pin-key:active { background: var(--accent); }
-  .pin-error { color: var(--danger); font-size: 13px; height: 18px; margin-bottom: 8px; text-align: center; }
-  .section-header { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin: 20px 0 8px; }
-  .email-check-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
-  .email-check-row:last-child { border-bottom: none; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f172a;--sur:#1e293b;--sur2:#263044;--acc:#6366f1;--acc2:#818cf8;--danger:#ef4444;--ok:#22c55e;--text:#f1f5f9;--muted:#94a3b8;--bdr:#334155;--r:14px;--th:72px}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%}
+.hdr{background:var(--sur);padding:env(safe-area-inset-top,44px) 20px 14px;border-bottom:1px solid var(--bdr)}
+.hdr h1{font-size:22px;font-weight:700}.hdr h1 span{color:var(--acc2)}
+.hdr .ver{font-size:10px;color:var(--muted);margin-top:2px}
+.body{flex:1;overflow-y:auto;padding:16px 16px calc(var(--th) + env(safe-area-inset-bottom,16px))}
+.tabs{position:fixed;bottom:0;left:0;right:0;height:calc(var(--th) + env(safe-area-inset-bottom,0px));background:var(--sur);border-top:1px solid var(--bdr);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:100}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;padding-top:8px}
+.tb.on{color:var(--acc2)}.tb svg{width:24px;height:24px}
+.scr{display:none}.scr.on{display:block}
+.card{background:var(--sur);border-radius:var(--r);padding:16px;margin-bottom:12px;border:1px solid var(--bdr)}
+.ct{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:10px;border:none;font-size:15px;font-weight:600;cursor:pointer}
+.btn:active{opacity:.75}.btn-p{background:var(--acc);color:#fff}.btn-d{background:var(--danger);color:#fff}
+.btn-g{background:var(--sur2);color:var(--text)}.btn-s{padding:6px 12px;font-size:13px;border-radius:8px}
+.btn-w{width:100%;justify-content:center}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:#1e3a5f;color:#93c5fd}
+.srow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.sc{background:var(--sur2);border-radius:12px;padding:14px 10px;text-align:center}
+.sn{font-size:28px;font-weight:700;line-height:1}.sl{font-size:11px;color:var(--muted);margin-top:4px}
+.hero{text-align:center;padding:28px 0 20px}
+.hero .ic{font-size:72px}.hero .st{font-size:18px;font-weight:700;margin-top:8px}
+.li{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--bdr)}
+.li:last-child{border-bottom:none}.lic{font-size:20px;margin-top:2px;flex-shrink:0}
+.lib{flex:1}.lit{font-size:15px;font-weight:600}.lis{font-size:12px;color:var(--muted);margin-top:2px}
+.lia{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.fg{margin-bottom:14px}
+.fl{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.fi{width:100%;background:var(--sur2);border:1px solid var(--bdr);border-radius:10px;padding:10px 12px;color:var(--text);font-size:15px;outline:none}
+.fi:focus{border-color:var(--acc)}
+textarea.fi{min-height:80px;resize:vertical;font-family:inherit}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:flex-end}
+.ov.h{display:none}
+.mo{background:var(--sur);border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));width:100%;max-height:90vh;overflow-y:auto}
+.mt{font-size:17px;font-weight:700;margin-bottom:16px}
+.mc{float:right;background:var(--sur2);border:none;color:var(--muted);border-radius:50%;width:28px;height:28px;font-size:16px;cursor:pointer;line-height:28px;text-align:center}
+.lp{background:var(--sur2);border-radius:10px;padding:14px;font-size:12px;line-height:1.6;white-space:pre-wrap;color:var(--text);font-family:monospace;max-height:280px;overflow-y:auto}
+#ls{position:fixed;inset:0;background:var(--bg);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px}
+#ls.h{display:none}
+.pd{display:flex;gap:16px;margin:20px 0}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--muted)}
+.dot.f{background:var(--acc);border-color:var(--acc)}
+.kp{display:grid;grid-template-columns:repeat(3,72px);gap:12px}
+.k{width:72px;height:72px;border-radius:50%;background:var(--sur);border:1px solid var(--bdr);color:var(--text);font-size:22px;font-weight:600;cursor:pointer}
+.k:active{background:var(--acc)}
+.sh{font-size:13px;margin:20px 0 8px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.er{font-size:13px;color:var(--danger);height:18px;margin-bottom:8px;text-align:center}
+#toast{position:fixed;top:calc(env(safe-area-inset-top,44px) + 60px);left:50%;transform:translateX(-50%);background:var(--ok);color:#fff;padding:10px 20px;border-radius:20px;font-weight:600;font-size:14px;z-index:400;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+.er-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--bdr)}
+.er-row:last-child{border-bottom:none}
 </style>
 </head>
 <body>
 
-<div id="unlock-screen">
-  <div class="unlock-icon">🛡️</div>
-  <div class="unlock-title">OSINTGuard</div>
-  <div class="unlock-sub" id="unlock-sub">Enter your PIN to unlock.</div>
-  <div class="pin-error" id="pin-error"></div>
-  <div class="pin-dots">
-    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
-    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+<div id="toast">✅ Profile saved!</div>
+
+<div id="ls">
+  <div style="font-size:60px;margin-bottom:12px">🛡️</div>
+  <div style="font-size:22px;font-weight:700;margin-bottom:4px">OSINTGuard</div>
+  <div style="font-size:14px;color:var(--muted);text-align:center" id="pm">Enter your PIN</div>
+  <div class="er" id="pe"></div>
+  <div class="pd">
+    <div class="dot" id="d0"></div><div class="dot" id="d1"></div>
+    <div class="dot" id="d2"></div><div class="dot" id="d3"></div>
   </div>
-  <div class="pin-keypad">
-    <button class="pin-key" onclick="pinKey('1')">1</button>
-    <button class="pin-key" onclick="pinKey('2')">2</button>
-    <button class="pin-key" onclick="pinKey('3')">3</button>
-    <button class="pin-key" onclick="pinKey('4')">4</button>
-    <button class="pin-key" onclick="pinKey('5')">5</button>
-    <button class="pin-key" onclick="pinKey('6')">6</button>
-    <button class="pin-key" onclick="pinKey('7')">7</button>
-    <button class="pin-key" onclick="pinKey('8')">8</button>
-    <button class="pin-key" onclick="pinKey('9')">9</button>
-    <button class="pin-key" style="visibility:hidden"></button>
-    <button class="pin-key" onclick="pinKey('0')">0</button>
-    <button class="pin-key" onclick="pinDel()">⌫</button>
+  <div class="kp">
+    <button class="k" onclick="pk('1')">1</button><button class="k" onclick="pk('2')">2</button><button class="k" onclick="pk('3')">3</button>
+    <button class="k" onclick="pk('4')">4</button><button class="k" onclick="pk('5')">5</button><button class="k" onclick="pk('6')">6</button>
+    <button class="k" onclick="pk('7')">7</button><button class="k" onclick="pk('8')">8</button><button class="k" onclick="pk('9')">9</button>
+    <button class="k" style="visibility:hidden"></button><button class="k" onclick="pk('0')">0</button><button class="k" onclick="pb()">⌫</button>
   </div>
 </div>
 
 <div id="app">
-  <div class="header"><h1>OSINT<span>Guard</span></h1></div>
-  <div class="content">
+  <div class="hdr"><h1>OSINT<span>Guard</span></h1><div class="ver">v4 — no cache</div></div>
+  <div class="body">
 
-    <div id="screen-dashboard" class="screen active">
-      <div class="shield-hero">
-        <div class="icon">🛡️</div>
-        <div class="status-text">Your privacy dashboard</div>
-        <div class="sub">Check your exposure below</div>
-      </div>
-      <div class="stats-row">
-        <div class="stat-card"><div class="stat-num" id="stat-emails" style="color:var(--accent2)">0</div><div class="stat-label">Emails</div></div>
-        <div class="stat-card"><div class="stat-num" style="color:var(--accent2)">12</div><div class="stat-label">Brokers</div></div>
-        <div class="stat-card"><div class="stat-num" id="stat-sent" style="color:var(--ok)">0</div><div class="stat-label">Sent</div></div>
+    <div id="s0" class="scr on">
+      <div class="hero"><div class="ic">🛡️</div><div class="st">Privacy Dashboard</div></div>
+      <div class="srow">
+        <div class="sc"><div class="sn" id="ne" style="color:var(--acc2)">0</div><div class="sl">Emails</div></div>
+        <div class="sc"><div class="sn" style="color:var(--acc2)">12</div><div class="sl">Brokers</div></div>
+        <div class="sc"><div class="sn" id="ns" style="color:var(--ok)">0</div><div class="sl">Sent</div></div>
       </div>
       <div class="card">
-        <div class="card-title">Quick Actions</div>
-        <button class="btn btn-primary btn-full" onclick="goTab('scan')" style="margin-bottom:8px">🔍 Check My Exposure</button>
-        <button class="btn btn-ghost btn-full" onclick="goTab('removals')">✉️ Send Removal Letters</button>
+        <div class="ct">Quick Actions</div>
+        <button class="btn btn-p btn-w" onclick="gt(1)" style="margin-bottom:8px">🔍 Check My Exposure</button>
+        <button class="btn btn-g btn-w" onclick="gt(2)">✉️ Send Removal Letters</button>
       </div>
-      <div class="card" style="border-left:3px solid var(--accent)">
-        <div class="card-title">100% Free — No Subscriptions</div>
-        <p style="font-size:13px;color:var(--muted)">All breach checks link to free public tools. Removal letters open in your own Mail app. Nothing costs money.</p>
+      <div class="card" style="border-left:3px solid var(--acc)">
+        <div class="ct">100% Free</div>
+        <p style="font-size:13px;color:var(--muted)">All checks use free public tools. Letters open in your Mail app. No subscriptions ever.</p>
       </div>
     </div>
 
-    <div id="screen-scan" class="screen">
+    <div id="s1" class="scr">
       <div class="card">
-        <div class="card-title">📧 Email Breach Check — Free</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Tap <strong>Check</strong> next to each email. Opens HaveIBeenPwned in Safari — free, no account needed.</p>
-        <div id="email-check-list"><p style="font-size:13px;color:var(--muted)">Add your emails in the Profile tab first.</p></div>
+        <div class="ct">📧 Email Breach Check — Free</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Tap Check to open HaveIBeenPwned in Safari — no account needed.</p>
+        <div id="el"><p style="font-size:13px;color:var(--muted)">Add emails in Profile tab first.</p></div>
       </div>
-      <div class="card" style="margin-top:4px">
-        <div class="card-title">🔐 Password Leak Check — Free</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Check if your passwords appeared in breaches. Your password never leaves your phone.</p>
-        <a href="https://haveibeenpwned.com/Passwords" target="_blank" class="btn btn-ghost btn-full">Check Passwords Free ↗</a>
-      </div>
-      <div class="section-header">Data Brokers</div>
       <div class="card">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Tap each broker to visit their opt-out page. Then send a removal letter from the Removals tab.</p>
-        <div id="broker-list"></div>
+        <div class="ct">🔐 Password Check — Free</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Your password never leaves your phone.</p>
+        <a href="https://haveibeenpwned.com/Passwords" target="_blank" class="btn btn-g btn-w">Check Passwords ↗</a>
       </div>
+      <div class="sh">Data Brokers</div>
+      <div class="card"><div id="bl"></div></div>
     </div>
 
-    <div id="screen-removals" class="screen">
+    <div id="s2" class="scr">
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">Removal Letters</div>
-        <p style="font-size:13px;color:var(--muted)">Tap <strong>Send Letter</strong> to open a pre-written CCPA removal letter in your Mail app.</p>
+        <div class="ct">Removal Letters</div>
+        <p style="font-size:13px;color:var(--muted)">Tap Send Letter to open a CCPA removal letter in Mail, pre-filled with your info.</p>
       </div>
-      <div id="removal-list"></div>
+      <div id="rl"></div>
     </div>
 
-    <div id="screen-profile" class="screen">
+    <div id="s3" class="scr">
       <div class="card">
-        <div class="card-title">Your Profile</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Encrypted on your device with your PIN. Used to generate removal letters.</p>
-        <button class="btn btn-primary btn-full" onclick="openProfileEdit()">✏️ Edit Profile</button>
+        <div class="ct">Your Profile</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Stored only on this device.</p>
+        <button class="btn btn-p btn-w" onclick="oe()">✏️ Edit Profile</button>
       </div>
-      <div class="section-header">Stored Info</div>
-      <div class="card"><div id="profile-view"></div></div>
-      <div class="section-header">Danger Zone</div>
+      <div class="sh">Saved Info</div>
+      <div class="card"><div id="pv"><p style="color:var(--muted);font-size:14px">No profile yet — tap Edit Profile above.</p></div></div>
+      <div class="sh">Danger Zone</div>
       <div class="card">
-        <button class="btn btn-danger btn-sm" onclick="confirmClearData()">🗑 Clear All Data & Reset PIN</button>
+        <button class="btn btn-d btn-s" onclick="ca()">🗑 Clear All Data & Reset PIN</button>
       </div>
     </div>
 
   </div>
 
-  <div class="tab-bar">
-    <button class="tab-btn active" id="tab-dashboard" onclick="goTab('dashboard')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L20 8.5v7l-8 4-8-4v-7l8-4.32z"/></svg>Home
-    </button>
-    <button class="tab-btn" id="tab-scan" onclick="goTab('scan')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Scan
-    </button>
-    <button class="tab-btn" id="tab-removals" onclick="goTab('removals')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Removals
-    </button>
-    <button class="tab-btn" id="tab-profile" onclick="goTab('profile')">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile
-    </button>
+  <div class="tabs">
+    <button class="tb on" id="t0" onclick="gt(0)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L20 8.5v7l-8 4-8-4v-7l8-4.32z"/></svg>Home</button>
+    <button class="tb" id="t1" onclick="gt(1)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>Scan</button>
+    <button class="tb" id="t2" onclick="gt(2)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>Removals</button>
+    <button class="tb" id="t3" onclick="gt(3)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Profile</button>
   </div>
 </div>
 
-<div class="modal-overlay hidden" id="profile-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('profile-modal')">✕</button>
-    <div class="modal-title">Edit Profile</div>
-    <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="edit-name" placeholder="Owen Glen Lee"></div>
-    <div class="form-group"><label class="form-label">Addresses (one per line)</label><textarea class="form-input" id="edit-addresses"></textarea></div>
-    <div class="form-group"><label class="form-label">Phone Numbers (one per line)</label><textarea class="form-input" id="edit-phones" style="min-height:60px"></textarea></div>
-    <div class="form-group"><label class="form-label">Email Addresses (one per line)</label><textarea class="form-input" id="edit-emails"></textarea></div>
-    <div class="form-group"><label class="form-label">Usernames (one per line)</label><textarea class="form-input" id="edit-usernames" style="min-height:60px"></textarea></div>
-    <button class="btn btn-primary btn-full" onclick="saveProfile()">💾 Save Profile</button>
+<div class="ov h" id="em">
+  <div class="mo">
+    <button class="mc" onclick="cm('em')">✕</button>
+    <div class="mt">Edit Profile</div>
+    <div class="fg"><label class="fl">Full Name</label><input class="fi" id="fn" placeholder="Owen Glen Lee"></div>
+    <div class="fg"><label class="fl">Addresses (one per line)</label><textarea class="fi" id="fa"></textarea></div>
+    <div class="fg"><label class="fl">Phone Numbers (one per line)</label><textarea class="fi" id="fp" style="min-height:60px"></textarea></div>
+    <div class="fg"><label class="fl">Email Addresses (one per line)</label><textarea class="fi" id="fe"></textarea></div>
+    <div class="fg"><label class="fl">Usernames (one per line)</label><textarea class="fi" id="fu" style="min-height:60px"></textarea></div>
+    <button class="btn btn-p btn-w" onclick="sp()">💾 Save Profile</button>
   </div>
 </div>
 
-<div class="modal-overlay hidden" id="letter-modal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('letter-modal')">✕</button>
-    <div class="modal-title" id="letter-modal-title">Removal Letter</div>
-    <div class="letter-preview" id="letter-modal-body"></div>
-    <div style="margin-top:14px;display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1" onclick="sendLetter()">📨 Open in Mail</button>
-      <button class="btn btn-ghost btn-sm" id="copy-btn" onclick="copyLetter()">Copy</button>
+<div class="ov h" id="lm">
+  <div class="mo">
+    <button class="mc" onclick="cm('lm')">✕</button>
+    <div class="mt" id="lt">Letter</div>
+    <div class="lp" id="lb"></div>
+    <div style="margin-top:14px;display:flex;gap:8px">
+      <button class="btn btn-p" style="flex:1" onclick="sl()">📨 Open in Mail</button>
+      <button class="btn btn-g btn-s" id="cb" onclick="cl()">Copy</button>
     </div>
   </div>
 </div>
 
 <script>
-const BROKERS=[{id:'spokeo',name:'Spokeo',email:null,url:'https://www.spokeo.com/optout',ccpa:true},{id:'whitepages',name:'Whitepages',email:null,url:'https://www.whitepages.com/suppression_requests',ccpa:true},{id:'beenverified',name:'BeenVerified',email:'support@beenverified.com',url:'https://www.beenverified.com/app/optout/search',ccpa:true},{id:'intelius',name:'Intelius',email:null,url:'https://www.intelius.com/optout',ccpa:true},{id:'mylife',name:'MyLife',email:'privacy@mylife.com',url:'https://www.mylife.com/privacy-policy',ccpa:true},{id:'radaris',name:'Radaris',email:'privacy@radaris.com',url:'https://radaris.com/control/privacy',ccpa:true},{id:'peoplefinder',name:'PeopleFinder',email:null,url:'https://www.peoplefinder.com/optout.php',ccpa:true},{id:'fastpeople',name:'FastPeopleSearch',email:null,url:'https://www.fastpeoplesearch.com/removal',ccpa:false},{id:'truthfinder',name:'TruthFinder',email:'support@truthfinder.com',url:'https://www.truthfinder.com/opt-out/',ccpa:true},{id:'acxiom',name:'Acxiom',email:null,url:'https://isapps.acxiom.com/optout/optout.aspx',ccpa:true},{id:'instantcheck',name:'Instant Checkmate',email:'support@instantcheckmate.com',url:'https://www.instantcheckmate.com/opt-out/',ccpa:true},{id:'peoplesmart',name:'PeopleSmart',email:null,url:'https://www.peoplesmart.com/optout-go',ccpa:true}];
-
-let profile={fullName:'',addresses:[],phones:[],emails:[],usernames:[]};
-let sentCount=0,currentLetter={email:'',subject:'',body:''};
-const PIN_HASH_KEY='og_pin_hash',DATA_KEY='og_data',SENT_KEY='og_sent';
-let pinBuffer='',isSettingPin=false,pendingPin='',sessionPin='';
-
-async function hashPin(p){const e=new TextEncoder().encode(p+'osintguard_salt_v1');const b=await crypto.subtle.digest('SHA-256',e);return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
-async function deriveKey(p){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(p),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:new TextEncoder().encode('osintguard_v1'),iterations:100000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
-async function encryptData(d,p){const key=await deriveKey(p);const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(d)));return JSON.stringify({iv:Array.from(iv),ct:Array.from(new Uint8Array(ct))});}
-async function decryptData(s,p){try{const{iv,ct}=JSON.parse(s);const key=await deriveKey(p);const d=await crypto.subtle.decrypt({name:'AES-GCM',iv:new Uint8Array(iv)},key,new Uint8Array(ct));return JSON.parse(new TextDecoder().decode(d));}catch{return null;}}
-
-function updatePinDots(){for(let i=0;i<4;i++)document.getElementById('d'+i).classList.toggle('filled',i<pinBuffer.length);}
-function pinKey(k){if(pinBuffer.length>=4)return;pinBuffer+=k;updatePinDots();if(pinBuffer.length===4)setTimeout(submitPin,120);}
-function pinDel(){pinBuffer=pinBuffer.slice(0,-1);updatePinDots();}
-async function submitPin(){
-  const stored=localStorage.getItem(PIN_HASH_KEY);
-  if(!stored){
-    if(!isSettingPin){isSettingPin=true;pendingPin=pinBuffer;pinBuffer='';updatePinDots();document.getElementById('unlock-sub').textContent='Confirm your PIN';document.getElementById('pin-error').textContent='';return;}
-    if(pinBuffer!==pendingPin){document.getElementById('pin-error').textContent="PINs don't match. Try again.";pinBuffer='';pendingPin='';isSettingPin=false;updatePinDots();document.getElementById('unlock-sub').textContent='Set a 4-digit PIN to protect your data.';return;}
-    localStorage.setItem(PIN_HASH_KEY,await hashPin(pinBuffer));await unlock(pinBuffer);return;
-  }
-  if(await hashPin(pinBuffer)===stored){await unlock(pinBuffer);}
-  else{document.getElementById('pin-error').textContent='Incorrect PIN';pinBuffer='';updatePinDots();}
-}
-async function unlock(pin){
-  sessionPin=pin;
-  const enc=localStorage.getItem(DATA_KEY);
-  if(enc){const dec=await decryptData(enc,pin);if(dec)profile=dec;}
-  sentCount=parseInt(localStorage.getItem(SENT_KEY)||'0');
-  document.getElementById('unlock-screen').classList.add('hidden');
-  renderAll();
-}
-async function saveProfileEncrypted(){localStorage.setItem(DATA_KEY,await encryptData(profile,sessionPin));}
-
-function goTab(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));document.getElementById('screen-'+n).classList.add('active');document.getElementById('tab-'+n).classList.add('active');}
-function closeModal(id){document.getElementById(id).classList.add('hidden');}
-
-function renderAll(){
-  document.getElementById('stat-emails').textContent=profile.emails.length||'0';
-  document.getElementById('stat-sent').textContent=sentCount;
-  renderEmailCheckList();renderBrokerList();renderRemovalList();renderProfileView();
-}
-function renderEmailCheckList(){
-  const el=document.getElementById('email-check-list');
-  if(!profile.emails||!profile.emails.length){el.innerHTML='<p style="font-size:13px;color:var(--muted)">Add your emails in the Profile tab first.</p>';return;}
-  el.innerHTML=profile.emails.map(email=>`<div class="email-check-row"><div><div style="font-size:14px;font-weight:600">${email}</div><div style="font-size:11px;color:var(--muted)">Tap to check for free</div></div><a href="https://haveibeenpwned.com/account/${encodeURIComponent(email)}" target="_blank" class="btn btn-primary btn-sm">Check ↗</a></div>`).join('');
-}
-function renderBrokerList(){document.getElementById('broker-list').innerHTML=BROKERS.map(b=>`<div class="list-item"><div class="list-item-icon">🔍</div><div class="list-item-body"><div class="list-item-title">${b.name} ${b.ccpa?'<span class="pill pill-info">CCPA</span>':''}</div><div class="list-item-sub">Tap to check their opt-out page</div><div class="list-item-actions"><a href="${b.url}" target="_blank" class="btn btn-ghost btn-sm">Open Opt-Out Page ↗</a></div></div></div>`).join('');}
-function renderRemovalList(){document.getElementById('removal-list').innerHTML=BROKERS.map(b=>`<div class="card" style="margin-bottom:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div style="font-size:15px;font-weight:700">${b.name}</div>${b.ccpa?'<span class="pill pill-info">CCPA</span>':''}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${b.email?`<button class="btn btn-primary btn-sm" onclick="openLetterModal('${b.id}')">✉️ Send Letter</button>`:'<span style="font-size:12px;color:var(--muted)">Use opt-out page</span>'}<a href="${b.url}" target="_blank" class="btn btn-ghost btn-sm">Opt-Out Page ↗</a></div></div>`).join('');}
-function renderProfileView(){
-  const el=document.getElementById('profile-view');
-  if(!profile.fullName){el.innerHTML='<p style="color:var(--muted);font-size:14px">No profile yet. Tap Edit Profile above.</p>';return;}
-  const rows=[['Name',profile.fullName],['Addresses',profile.addresses.join('\n')||'—'],['Phones',profile.phones.join(', ')||'—'],['Emails',profile.emails.join('\n')||'—'],['Usernames',profile.usernames.join(', ')||'—']];
-  el.innerHTML=rows.map(([l,v])=>`<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">${l}</div><div style="font-size:14px;white-space:pre-wrap">${v}</div></div>`).join('');
-}
-
-function openProfileEdit(){
-  document.getElementById('edit-name').value=profile.fullName;
-  document.getElementById('edit-addresses').value=profile.addresses.join('\n');
-  document.getElementById('edit-phones').value=profile.phones.join('\n');
-  document.getElementById('edit-emails').value=profile.emails.join('\n');
-  document.getElementById('edit-usernames').value=profile.usernames.join('\n');
-  document.getElementById('profile-modal').classList.remove('hidden');
-}
-async function saveProfile(){
-  const lines=s=>s.split('\n').map(x=>x.trim()).filter(Boolean);
-  profile.fullName=document.getElementById('edit-name').value.trim();
-  profile.addresses=lines(document.getElementById('edit-addresses').value);
-  profile.phones=lines(document.getElementById('edit-phones').value);
-  profile.emails=lines(document.getElementById('edit-emails').value);
-  profile.usernames=lines(document.getElementById('edit-usernames').value);
-  await saveProfileEncrypted();closeModal('profile-modal');renderAll();
-}
-
-function generateLetter(b){
-  const date=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  return `${date}\n\nTo: ${b.name} Privacy / Data Removal Team\n\nSubject: ${b.name} – CCPA Data Deletion & Opt-Out Request\n\nTo Whom It May Concern,\n\nI am formally requesting the deletion of all personal information your organization holds about me, pursuant to the California Consumer Privacy Act (CCPA / Cal. Civ. Code § 1798.100 et seq.) and all other applicable privacy laws.\n\nMy identifying information:\n\n   Full Name: ${profile.fullName||'See email sender'}\n   Addresses: ${profile.addresses.join(', ')||'N/A'}\n   Phone Numbers: ${profile.phones.join(', ')||'N/A'}\n   Email Addresses: ${profile.emails.join(', ')||'N/A'}\n   Usernames: ${profile.usernames.join(', ')||'N/A'}\n\nI hereby request that you:\n1. Immediately cease the sale or sharing of my personal data.\n2. Delete all records associated with my information above.\n3. Remove my data from all affiliated databases.\n4. Confirm deletion in writing within 45 days as required by CCPA.\n\nSincerely,\n${profile.fullName||'Data Subject'}\n${profile.emails[0]||''}\n\n---\nOpt-Out URL: ${b.url}`;
-}
-function openLetterModal(id){
-  const b=BROKERS.find(x=>x.id===id);if(!b||!b.email)return;
-  if(!profile.fullName){alert('Fill in your Profile first.');goTab('profile');return;}
-  const body=generateLetter(b);
-  document.getElementById('letter-modal-title').textContent=`Letter → ${b.name}`;
-  document.getElementById('letter-modal-body').textContent=body;
-  currentLetter={email:b.email,subject:`Opt-Out / Data Deletion Request – ${b.name}`,body};
-  document.getElementById('letter-modal').classList.remove('hidden');
-}
-function sendLetter(){
-  const{email,subject,body}=currentLetter;
-  window.location.href=`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  sentCount++;localStorage.setItem(SENT_KEY,sentCount);
-  document.getElementById('stat-sent').textContent=sentCount;
-  closeModal('letter-modal');
-}
-function copyLetter(){navigator.clipboard.writeText(currentLetter.body).then(()=>{const b=document.getElementById('copy-btn');b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy',2000);});}
-function confirmClearData(){if(confirm('Permanently delete all your data and reset the PIN?')){localStorage.clear();location.reload();}}
-
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
-window.addEventListener('DOMContentLoaded',()=>{
-  const h=localStorage.getItem(PIN_HASH_KEY);
-  if(!h)document.getElementById('unlock-sub').textContent='Set a 4-digit PIN to protect your data.';
-});
+const BR=[{id:'spokeo',n:'Spokeo',e:null,u:'https://www.spokeo.com/optout',c:true},{id:'whitepages',n:'Whitepages',e:null,u:'https://www.whitepages.com/suppression_requests',c:true},{id:'beenverified',n:'BeenVerified',e:'support@beenverified.com',u:'https://www.beenverified.com/app/optout/search',c:true},{id:'intelius',n:'Intelius',e:null,u:'https://www.intelius.com/optout',c:true},{id:'mylife',n:'MyLife',e:'privacy@mylife.com',u:'https://www.mylife.com/privacy-policy',c:true},{id:'radaris',n:'Radaris',e:'privacy@radaris.com',u:'https://radaris.com/control/privacy',c:true},{id:'peoplefinder',n:'PeopleFinder',e:null,u:'https://www.peoplefinder.com/optout.php',c:true},{id:'fastpeople',n:'FastPeopleSearch',e:null,u:'https://www.fastpeoplesearch.com/removal',c:false},{id:'truthfinder',n:'TruthFinder',e:'support@truthfinder.com',u:'https://www.truthfinder.com/opt-out/',c:true},{id:'acxiom',n:'Acxiom',e:null,u:'https://isapps.acxiom.com/optout/optout.aspx',c:true},{id:'instantcheck',n:'Instant Checkmate',e:'support@instantcheckmate.com',u:'https://www.instantcheckmate.com/opt-out/',c:true},{id:'peoplesmart',n:'PeopleSmart',e:null,u:'https://www.peoplesmart.com/optout-go',c:true}];
+const PK='og4_pin',DK='og4_data',SK='og4_sent';
+let P={name:'',addr:[],ph:[],em:[],un:[]},sent=0,curL={},pb_='',sp_=false,pp_='';
+function lp(){try{return JSON.parse(localStorage.getItem(DK))||{name:'',addr:[],ph:[],em:[],un:[]};}catch{return{name:'',addr:[],ph:[],em:[],un:[]};}}
+function dots(){for(let i=0;i<4;i++)document.getElementById('d'+i).classList.toggle('f',i<pb_.length);}
+function pk(k){if(pb_.length>=4)return;pb_+=k;dots();if(pb_.length===4)setTimeout(cp,120);}
+function pb(){pb_=pb_.slice(0,-1);dots();}
+function cp(){const s=localStorage.getItem(PK);if(!s){if(!sp_){sp_=true;pp_=pb_;pb_='';dots();document.getElementById('pm').textContent='Confirm PIN';document.getElementById('pe').textContent='';return;}if(pb_!==pp_){document.getElementById('pe').textContent="PINs don't match";pb_='';pp_='';sp_=false;dots();document.getElementById('pm').textContent='Set a 4-digit PIN';return;}localStorage.setItem(PK,pb_);ua();return;}if(pb_===s){ua();}else{document.getElementById('pe').textContent='Incorrect PIN';pb_='';dots();}}
+function ua(){P=lp();sent=parseInt(localStorage.getItem(SK)||'0');document.getElementById('ls').classList.add('h');ra();}
+function gt(n){document.querySelectorAll('.scr').forEach((s,i)=>s.classList.toggle('on',i===n));document.querySelectorAll('.tb').forEach((b,i)=>b.classList.toggle('on',i===n));}
+function cm(id){document.getElementById(id).classList.add('h');}
+function ra(){document.getElementById('ne').textContent=P.em.length;document.getElementById('ns').textContent=sent;rei();reb();rer();rep();}
+function rei(){const el=document.getElementById('el');if(!P.em.length){el.innerHTML='<p style="font-size:13px;color:var(--muted)">Add emails in Profile tab first.</p>';return;}el.innerHTML=P.em.map(e=>`<div class="er-row"><div><div style="font-size:14px;font-weight:600">${e}</div><div style="font-size:11px;color:var(--muted)">Free check</div></div><a href="https://haveibeenpwned.com/account/${encodeURIComponent(e)}" target="_blank" class="btn btn-p btn-s">Check ↗</a></div>`).join('');}
+function reb(){document.getElementById('bl').innerHTML=BR.map(b=>`<div class="li"><div class="lic">🔍</div><div class="lib"><div class="lit">${b.n}${b.c?' <span class="pill">CCPA</span>':''}</div><div class="lis">Tap to check opt-out page</div><div class="lia"><a href="${b.u}" target="_blank" class="btn btn-g btn-s">Opt-Out Page ↗</a></div></div></div>`).join('');}
+function rer(){document.getElementById('rl').innerHTML=BR.map(b=>`<div class="card" style="margin-bottom:10px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><b>${b.n}</b>${b.c?'<span class="pill">CCPA</span>':''}</div><div style="display:flex;gap:8px;flex-wrap:wrap">${b.e?`<button class="btn btn-p btn-s" onclick="ol('${b.id}')">✉️ Send Letter</button>`:'<span style="font-size:12px;color:var(--muted)">Use opt-out page</span>'}<a href="${b.u}" target="_blank" class="btn btn-g btn-s">Opt-Out Page ↗</a></div></div>`).join('');}
+function rep(){const el=document.getElementById('pv');if(!P.name){el.innerHTML='<p style="color:var(--muted);font-size:14px">No profile yet — tap Edit Profile above.</p>';return;}el.innerHTML=[['Name',P.name],['Addresses',P.addr.join('\n')||'—'],['Phones',P.ph.join(', ')||'—'],['Emails',P.em.join('\n')||'—'],['Usernames',P.un.join(', ')||'—']].map(([l,v])=>`<div style="margin-bottom:12px"><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">${l}</div><div style="font-size:14px;white-space:pre-wrap">${v}</div></div>`).join('');}
+function oe(){document.getElementById('fn').value=P.name;document.getElementById('fa').value=P.addr.join('\n');document.getElementById('fp').value=P.ph.join('\n');document.getElementById('fe').value=P.em.join('\n');document.getElementById('fu').value=P.un.join('\n');document.getElementById('em').classList.remove('h');}
+function sp(){const L=s=>s.split('\n').map(x=>x.trim()).filter(Boolean);P={name:document.getElementById('fn').value.trim(),addr:L(document.getElementById('fa').value),ph:L(document.getElementById('fp').value),em:L(document.getElementById('fe').value),un:L(document.getElementById('fu').value)};localStorage.setItem(DK,JSON.stringify(P));cm('em');ra();const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function ml(b){const d=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});return `${d}\n\nTo: ${b.n} Privacy Team\n\nRe: CCPA Data Deletion Request\n\nTo Whom It May Concern,\n\nI formally request deletion of all personal information your organization holds about me under the California Consumer Privacy Act (CCPA) and all applicable privacy laws.\n\nMy information:\n  Full Name: ${P.name}\n  Addresses: ${P.addr.join('; ')||'N/A'}\n  Phones: ${P.ph.join(', ')||'N/A'}\n  Emails: ${P.em.join(', ')||'N/A'}\n  Usernames: ${P.un.join(', ')||'N/A'}\n\nRequests:\n1. Stop selling or sharing my data immediately.\n2. Delete all records associated with my information.\n3. Remove from all affiliated databases.\n4. Confirm deletion in writing within 45 days (CCPA requirement).\n\nSincerely,\n${P.name}\n${P.em[0]||''}\n\nOpt-Out URL: ${b.u}`;}
+function ol(id){const b=BR.find(x=>x.id===id);if(!b||!b.e)return;if(!P.name){alert('Please fill in your Profile first (Profile tab → Edit Profile).');gt(3);return;}const body=ml(b);document.getElementById('lt').textContent='Letter → '+b.n;document.getElementById('lb').textContent=body;curL={e:b.e,s:'Data Deletion Request – '+b.n,b:body};document.getElementById('lm').classList.remove('h');}
+function sl(){window.location.href=`mailto:${curL.e}?subject=${encodeURIComponent(curL.s)}&body=${encodeURIComponent(curL.b)}`;sent++;localStorage.setItem(SK,sent);document.getElementById('ns').textContent=sent;cm('lm');}
+function cl(){navigator.clipboard.writeText(curL.b).then(()=>{const b=document.getElementById('cb');b.textContent='Copied ✓';setTimeout(()=>b.textContent='Copy',2000);});}
+function ca(){if(confirm('Delete all data and reset PIN?')){localStorage.clear();location.reload();}}
+window.addEventListener('DOMContentLoaded',()=>{if(!localStorage.getItem(PK))document.getElementById('pm').textContent='Set a 4-digit PIN to protect your data';});
 </script>
 </body>
 </html>
